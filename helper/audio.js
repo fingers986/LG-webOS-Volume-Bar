@@ -28,6 +28,7 @@ function create(ctx) {
   let arcTimer = null;
   let arcBusy = false;
   let arcVolume = null;
+  let masterVolume = null;
   let activeUntil = 0;
   let arcFailed = false;
   let stock = ''; // LG's own bar: 'on', 'off' (we switched it off) or 'unsupported' (the TV does not report the setting)
@@ -243,6 +244,8 @@ function create(ctx) {
             const v = j.volumeStatus || j;
             if (v && (typeof v.volume === 'number' || typeof v.muteStatus === 'boolean')) {
               const newVol = typeof v.volume === 'number' ? v.volume : status.volume;
+              const masterChanged = typeof v.volume === 'number' && v.volume !== masterVolume;
+              if (typeof v.volume === 'number') masterVolume = v.volume;
               const newMute = typeof v.muteStatus === 'boolean' ? v.muteStatus : status.mute;
               const newOutput = String(v.soundOutput || status.output || 'tv_speaker');
               const newMax = typeof v.maxVolume === 'number' ? v.maxVolume : 100;
@@ -260,9 +263,9 @@ function create(ctx) {
               if (initialized && changed && (newOutput !== 'external_arc' || arcVolume !== null)) {
                 showVolumeOSD(status);
               }
-              if (newOutput === 'external_arc' && changed) {
+              if (newOutput === 'external_arc' && (changed || masterChanged)) {
                 activeUntil = Date.now() + 2500;
-                if (!arcBusy && (!arcTimer || Date.now() < activeUntil)) {
+                if (!arcBusy) {
                   if (arcTimer) clearTimeout(arcTimer);
                   pollArc();
                 }

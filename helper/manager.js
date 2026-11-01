@@ -23,7 +23,7 @@ function create(ctx) {
       return send(status());
     }
     if (act === 'uninstall') {
-      exec.detached('sleep 1; sh ' + P.D + '/uninstall.sh');
+      exec.detached('sleep 1; sh ' + P.SERVICE_DIR + '/scripts/uninstall.sh');
       return send({ returnValue: true });
     }
     return send({ error: 'unknown action' }, 404);
