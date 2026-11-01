@@ -1,0 +1,45 @@
+# Debloat
+
+An optional clean-up of LG's ads and telemetry. It is on by default in the setup; the [manager app](manager.md) has a **Debloat**
+screen with its four groups.
+
+## What it does
+
+About a minute after every boot, the debloat:
+
+| Group | What it does |
+|---|---|
+| **Ads** | Prevents `adoverlay-service` from starting, and adds `eic.ads.lgtvcommon.com`, `nl.ad.lgsmartad.com` and `nl.info.lgsmartad.com` to `/etc/hosts`, pointing at `127.0.0.1` and `::1` and marked `# cleanyourtv-debloat` (other entries are untouched). |
+| **Viewing tracking (LivePlus)** | Prevents `acr2` from starting: it recognises what is on screen and reports it. |
+| **Telemetry logs** | Stops the systemd services `remotelogger` and `service-logger`. |
+| **Suggestions and nudges** | Stops `contentminer` and `nudge`, and prevents `sportsalarm` from starting. |
+
+A program is prevented from starting by mounting a do-nothing stub over it (in RAM; the real files are not changed). Where
+`/etc/hosts` is on the read-only system partition, a copy with the ad lines is kept in RAM (`/tmp/cleanyourtv-hosts`) and mounted
+over it until the next restart. Each group can be switched on or off on its own; the ones that are off are listed in
+`options.debloatOff` in `config.json`.
+
+Nothing is uninstalled. It applies only while the launcher is Home, because LG's own Home needs some of those services to start;
+switching back to LG's Home lifts the debloat first.
+
+## Turning it off
+
+Switch a group off in the manager app (**Debloat**), or **Switch all off**. It starts that group's services again, unmounts its stubs
+and, for **Ads**, removes the marked hosts lines. Switching the last group off switches the debloat off. To pause it without the manager, create `/media/developer/cleanyourtv/DISABLE-DEBLOAT`.
+
+## What it does not do
+
+It does not block updates: firmware update blocking (for example with the Homebrew Channel's tools) is separate and is not touched.
+It does not claim to remove all tracking. It stops the services listed above and nothing else.
+
+**With Glasshouse.** If you also run [Glasshouse](https://github.com/rorygallagher2024/glasshouse) with its ad blocking on, both
+tools put ad servers in `/etc/hosts` and both stop LG's ad services, so the **Ads** group is mostly redundant. To let one tool own
+that file, switch the **Ads** group off in the manager (or set up with `--no-debloat`). If you leave it on, the two work side by
+side: the debloat adds its two marked lines to the file that is mounted at the time, and its undo removes only its own mount.
+
+**Blocking more on the network.** The **Ads** group blocks three ad servers on the TV itself. A DNS blocker on your network
+(Pi-hole, AdGuard Home) can block many more with a community list such as
+[hugobatista/lg-tv-ad-block](https://github.com/hugobatista/lg-tv-ad-block). Apply it to the TV only (in Pi-hole, a group with
+the TV as its only client): on one network it also blocked Philips Hue, `developers.google.com`, Apple services and parts of
+Prime Video for every other device. Its `list-store` variant also blocks the LG Content Store, so apps can no longer be installed or
+updated.

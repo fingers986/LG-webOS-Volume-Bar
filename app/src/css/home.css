@@ -1,0 +1,1246 @@
+/* Built for a weak TV GPU: only transform and opacity ever animate; no blur, masks or filters. Everything a theme changes (manager > Theme) is a
+   variable here; the service works the values out (helper/theme.js) and the defaults below are the original look. */
+:root {
+  --ink: #f5f6f8;
+  --ink2: rgba(245, 246, 248, 0.62);
+  --night: #07080b;
+  --night-rgb: 7, 8, 11;
+  --panel: #14161b;
+  --panel2: #1a1c22;
+  --acc: #f5f6f8;
+  --acc-ink: #0b0c10;
+  --focus: #f5f6f8;
+  --font: "LG Smart UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --fs: 1;
+  --spd: 1;
+  --glow-op: 1;
+  --wall: none;
+  --pill-bg: rgba(255, 255, 255, 0.09);
+  --pill-ring: rgba(255, 255, 255, 0.1);
+  --pill-r: 32px;
+  --pill-h: 64px;
+  --bar-gap: 16px;
+  --menu-bg: rgba(5, 6, 9, 0.97);
+  --row-r: 30px;
+  --clock-l: 96px;
+  --clock-r: auto;
+  --clock-t: 54px;
+  --clock-b: auto;
+  --clock-tx: none;
+  --clock-ai: flex-start;
+  --clock-s: 1;
+  --date-s: 1;
+  --clock-d: flex;
+  --date-d: block;
+  --greet-d: none;
+  --bar-l: auto;
+  --bar-r: 96px;
+  --bar-t: 54px;
+  --bar-b: auto;
+  --bar-tx: none;
+  --bar-d: flex;
+  --name-d: block;
+  --name-x: 96px;
+  --name-y: 150px;
+  --name-a: left;
+  --name-s: 1;
+  --view-top: 300px;
+  --dock-l: 96px;
+  --dock-r: auto;
+  --dock-t: 60px;
+  --dock-b: auto;
+  --dock-tx: none;
+  --dock-w: 408px;
+  --dock-h: 230px;
+  --dock-gap: 32px;
+  --dock-rad: 36px;
+  --dock-panel: 0;
+  --dock-tile-alpha: 1;
+  --dock-tile-frost: 0;
+  --dock-frost-rgb: 255, 255, 255;
+  --dock-pad: 0px;
+  --dock-lift: -10px;
+  --dock-fs: 1.05;
+  --cols: 10;
+  --tile-w: 151px;
+  --tile-h: 151px;
+  --gap-x: 24px;
+  --gap-y: 26px;
+  --tile-r: 34px;
+  --grid-l: 96px;
+  --grid-w: 1728px;
+  --grid-t: 350px;
+  --grid-fs: 1.12;
+  --ov-dim: 0.95;
+  --gloss: 0;
+  --tile-border: 0;
+  --ring-w: 4px;
+  --ring-off: 4px;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+html,
+body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--font);
+}
+body {
+  background-image: var(--wall);
+  background-size: 1920px 1080px;
+}
+::selection {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 720px;
+  opacity: 0;
+  transition: opacity calc(0.35s * var(--spd)) linear;
+  will-change: opacity;
+  background: radial-gradient(ellipse 1400px 640px at 26% -6%, rgba(var(--c), 0.45), transparent 70%);
+}
+.glow.on {
+  opacity: var(--glow-op);
+}
+
+#top {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  z-index: 5;
+  pointer-events: none;
+}
+#clock {
+  position: absolute;
+  left: var(--clock-l);
+  right: var(--clock-r);
+  top: var(--clock-t);
+  bottom: var(--clock-b);
+  transform: var(--clock-tx);
+  display: var(--clock-d);
+  align-items: center;
+  height: 76px;
+}
+#greet {
+  display: none;
+  font-size: calc(24px * var(--fs) * var(--date-s));
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245, 246, 248, 0.88);
+  line-height: 1;
+}
+#time {
+  font-size: calc(56px * var(--fs) * var(--clock-s));
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+#date {
+  display: var(--date-d);
+  font-size: calc(28px * var(--fs) * var(--date-s));
+  color: rgba(245, 246, 248, 0.88);
+  margin-left: 22px;
+  padding-top: 14px;
+}
+[data-clock="stack"] #clock {
+  flex-direction: column;
+  align-items: var(--clock-ai);
+  height: auto;
+}
+[data-clock="stack"] #greet {
+  display: var(--greet-d);
+  margin: 0 0 12px 6px;
+}
+[data-clock="stack"] #date {
+  margin: 8px 0 0 6px;
+  padding: 0;
+}
+#bar {
+  pointer-events: auto;
+  position: absolute;
+  left: var(--bar-l);
+  right: var(--bar-r);
+  top: var(--bar-t);
+  bottom: var(--bar-b);
+  transform: var(--bar-tx);
+  display: var(--bar-d);
+  align-items: center;
+  height: calc(var(--pill-h) + 12px);
+}
+#bar > * + * {
+  margin-left: var(--bar-gap);
+}
+.pill {
+  display: flex;
+  align-items: center;
+  height: var(--pill-h);
+  padding: 0 30px 0 24px;
+  border-radius: var(--pill-r);
+  font-size: calc(26px * var(--fs));
+  font-weight: 500;
+  background: var(--pill-bg);
+  box-shadow: inset 0 0 0 1px var(--pill-ring);
+  transition: transform calc(0.12s * var(--spd)) cubic-bezier(0.3, 1.35, 0.5, 1);
+  will-change: transform;
+}
+.pill > * + * {
+  margin-left: 14px;
+}
+.pill svg {
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+.pill span {
+  white-space: nowrap;
+  max-width: 300px; /* a long translation is cut with "..." instead of pushing the buttons off the screen */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pill.f {
+  background: var(--acc);
+  color: var(--acc-ink);
+  transform: scale(1.07);
+}
+[data-bar="round"] .pill {
+  width: var(--pill-h);
+  padding: 0;
+  justify-content: center;
+}
+[data-bar="flat"] .pill {
+  background: none;
+  box-shadow: none;
+}
+[data-labels="hide"] .pill span {
+  display: none;
+}
+
+#shelf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--name-y);
+  height: 120px;
+  padding: 0 var(--name-x);
+  text-align: var(--name-a);
+  display: var(--name-d);
+  z-index: 5;
+}
+#name {
+  font-size: calc(92px * var(--fs) * var(--name-s));
+  font-weight: 700;
+  letter-spacing: -0.028em;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* the view clips rows as they scroll up under the shelf */
+#view {
+  position: absolute;
+  left: 0;
+  top: var(--view-top);
+  width: 1920px;
+  height: calc(1080px - var(--view-top));
+  overflow: hidden;
+  z-index: 2;
+}
+#scroll {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: calc(1080px - var(--view-top));
+  transition: transform calc(0.3s * var(--spd)) ease-out;
+  will-change: transform;
+}
+#dock {
+  position: absolute;
+  left: var(--dock-l);
+  right: var(--dock-r);
+  top: var(--dock-t);
+  bottom: var(--dock-b);
+  transform: var(--dock-tx);
+  display: flex;
+  z-index: 4;
+  padding: var(--dock-pad);
+  border-radius: calc(var(--dock-rad) + var(--dock-pad));
+  background: rgba(255, 255, 255, var(--dock-panel));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, calc(var(--dock-panel) * 1.4));
+}
+#dock > * + * {
+  margin-left: var(--dock-gap);
+}
+#grid {
+  position: absolute;
+  left: var(--grid-l);
+  top: var(--grid-t);
+  width: var(--grid-w);
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: var(--gap-y) var(--gap-x);
+}
+/* an overlay grid: hidden until the focus moves down into it, then dark layer + grid over the screen above the dock */
+[data-grid="overlay"] #grid {
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity calc(0.22s * var(--spd)) linear;
+}
+[data-grid="overlay"].grid-open #grid {
+  opacity: 1;
+  pointer-events: auto;
+}
+[data-grid="overlay"] #scroll::before,
+[data-grid="push"] #scroll::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1600px;
+  width: 1920px;
+  height: 4400px;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(var(--night-rgb), var(--ov-dim));
+  transition: opacity calc(0.22s * var(--spd)) linear;
+}
+[data-grid="overlay"].grid-open #scroll::before,
+[data-grid="push"].grid-open #scroll::before {
+  opacity: 1;
+}
+/* push: the grid sits under the dock; focusing it scrolls the dock up and fades the grid in */
+[data-grid="push"] #grid {
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity calc(0.25s * var(--spd)) linear;
+}
+[data-grid="push"].grid-open #grid {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* the app name stays with the dock's resting place; with the grid open it would sit among the tiles */
+[data-grid="push"] #shelf {
+  transition: opacity calc(0.25s * var(--spd)) linear;
+}
+[data-grid="push"].grid-open #shelf {
+  opacity: 0;
+}
+/* every row of tiles centred, also a last row that is not full. A flex row, spaced with margins: Chromium before 84 (webOS 5 and 6)
+   ignores gap in flex, so the tiles touched there and a tenth one fitted in a nine-column row. The grid is widened by one gap so the
+   half gaps at the ends cancel out. */
+[data-galign="center"] #grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-left: calc(var(--gap-x) / -2);
+  width: calc(var(--grid-w) + var(--gap-x));
+}
+/* the grid's own gap (#grid) would add to the margins where flex gap works: off for the centred row */
+[data-galign="center"] #grid {
+  gap: 0;
+}
+[data-galign="center"] #grid .tile {
+  width: var(--tile-w);
+  margin: 0 calc(var(--gap-x) / 2) var(--gap-y);
+}
+.tile::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--gloss);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, 0.24));
+}
+
+.tile {
+  --c: 74, 84, 112;
+  --b: 20, 22, 27;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+  background: rgb(var(--b));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, var(--tile-border));
+  transition: transform calc(0.12s * var(--spd)) cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+.snap .tile,
+.snap .pill {
+  transition: none;
+} /* held arrow key: follow the focus without animating each step */
+.tile.fill {
+  overflow: hidden;
+}
+.tile.fill img {
+  object-fit: fill;
+}
+.tile.press {
+  transform: scale(0.96) !important;
+  transition-duration: calc(0.06s * var(--spd));
+}
+.tile.moving {
+  z-index: 10;
+  transform: scale(1.08);
+  box-shadow: 0 28px 42px rgba(0, 0, 0, 0.75);
+}
+.tile.moving::before {
+  border-style: dashed;
+  border-color: var(--accent);
+}
+.tile.launching {
+  opacity: 0.82;
+}
+.tile.disintegrate-prep {
+  transform: scale(0.92) !important;
+  transition: transform calc(0.06s * var(--spd)) ease-out !important;
+}
+.tile.disintegrate {
+  pointer-events: none !important;
+  will-change: transform, opacity;
+  transition:
+    transform calc(0.38s * var(--spd)) cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity calc(0.32s * var(--spd)) ease-out !important;
+  transform: scale(0.15) !important;
+  opacity: 0 !important;
+}
+.disintegrate-box {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  overflow: visible;
+}
+.disintegrate-p {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: 1;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition:
+    transform calc(0.4s * var(--spd)) cubic-bezier(0.1, 0.85, 0.25, 1),
+    opacity calc(0.35s * var(--spd)) ease-out;
+}
+.tile img {
+  object-fit: contain;
+}
+.tile svg {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+.tile .t {
+  font-size: calc(26px * var(--fs));
+  font-weight: 600;
+  padding: 12px;
+  text-align: center;
+  line-height: 1.15;
+  opacity: 0.9;
+}
+/* The focus ring is a pseudo-element with its own radius: Chromium before 94 draws an outline as a rectangle, not around rounded corners. */
+.tile.f {
+  z-index: 3;
+  box-shadow: 0 24px 36px rgba(0, 0, 0, 0.6);
+}
+.tile.f::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  left: calc(-1 * (var(--ring-off) + var(--ring-w)));
+  top: calc(-1 * (var(--ring-off) + var(--ring-w)));
+  right: calc(-1 * (var(--ring-off) + var(--ring-w)));
+  bottom: calc(-1 * (var(--ring-off) + var(--ring-w)));
+  border: var(--ring-w) solid var(--focus);
+  border-radius: calc(var(--tile-r) + var(--ring-off) + var(--ring-w));
+}
+#dock .tile.f::before {
+  border-radius: calc(var(--dock-rad) + var(--ring-off) + var(--ring-w));
+}
+/* a tile that crops its picture (overflow: hidden) would cut the ring off: it gets a ring that sits against the tile */
+.tile.fill.f::before {
+  display: none;
+}
+.tile.fill.f {
+  box-shadow:
+    0 0 0 var(--ring-w) var(--focus),
+    0 24px 36px rgba(0, 0, 0, 0.6);
+}
+#dock .tile {
+  width: var(--dock-w);
+  height: var(--dock-h);
+  border-radius: var(--dock-rad);
+  /* below 1 the wallpaper shows through the tile (dock.tileAlpha); a tile that fills with app art stays opaque */
+  background: rgba(var(--b), var(--dock-tile-alpha));
+}
+/* frosted glass: a tint over the whole tile and its icon (dock.tileFrost), so the loud brand colour is calmed
+   without a floating square (tile and icon dim together); the focused tile keeps its ring and full colour.
+   dock.tileFrostColor sets the tint (--dock-frost-rgb): light for a glassy frost, dark to deepen. */
+#dock .tile:not(.f)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: rgba(var(--dock-frost-rgb), var(--dock-tile-frost));
+}
+#dock .tile img {
+  height: calc(56% * var(--icon-s, 1));
+  max-width: calc(65% * var(--icon-s, 1));
+}
+#dock .tile svg {
+  width: calc(96px * var(--icon-s, 1));
+  height: calc(96px * var(--icon-s, 1));
+}
+#dock .tile.f {
+  transform: translateY(var(--dock-lift)) scale(var(--dock-fs));
+}
+#grid .tile {
+  height: var(--tile-h);
+  border-radius: var(--tile-r);
+}
+#grid .tile img {
+  width: calc(64% * var(--icon-s, 1));
+  height: calc(64% * var(--icon-s, 1));
+  max-width: calc(75% * var(--icon-s, 1));
+}
+#grid .tile svg {
+  width: calc(64px * var(--icon-s, 1));
+  height: calc(64px * var(--icon-s, 1));
+}
+#grid .tile.f {
+  transform: scale(var(--grid-fs));
+}
+#grid .tile.sys {
+  flex-direction: column;
+}
+#grid .tile.sys > * + * {
+  margin-top: 8px;
+}
+.slab {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+#grid .tile.sys {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+/* an app that is open: a green dot, as in the Inputs picker (a child element: ::before is the focus ring, ::after the gloss) */
+.tile .rd {
+  position: absolute;
+  z-index: 1;
+  right: 14px;
+  top: 14px;
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: #1fbf5a;
+  box-shadow: 0 0 0 3px rgba(11, 12, 16, 0.85);
+  pointer-events: none;
+}
+#dock .tile .rd {
+  right: 20px;
+  top: 20px;
+  width: 18px;
+  height: 18px;
+  border-radius: 9px;
+}
+/* an input pinned to Home: the HDMI symbol over its name, the port under a name; dimmed while nothing is connected */
+.tile.inp {
+  flex-direction: column;
+}
+.tile.inp > * + * {
+  margin-top: 6px;
+}
+.tile.inp .slab {
+  color: var(--ink);
+  max-width: 90%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tile.inp .slab.sub {
+  font-size: 18px;
+  color: var(--ink2);
+}
+.tile.inp .slab:empty {
+  display: none;
+}
+.tile.inp.off {
+  opacity: 0.55;
+}
+/* in the dock the symbol and the name follow the tile's height, so a small square dock (Horizon) fits them too */
+#dock .tile.inp svg {
+  width: calc(var(--dock-h) * 0.3);
+  height: calc(var(--dock-h) * 0.3);
+}
+#dock .tile.inp .slab {
+  font-size: calc(var(--dock-h) * 0.11);
+}
+#dock .tile.inp .slab.sub {
+  font-size: calc(var(--dock-h) * 0.085);
+}
+
+#toast {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  padding: 18px 38px;
+  border-radius: 34px;
+  font-size: 28px;
+  max-width: 1500px; /* a long message (an error with its next step, a long translation) wraps instead of running off the screen */
+  width: max-content;
+  text-align: center;
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  pointer-events: none;
+}
+#toast.on {
+  opacity: 1;
+}
+/* Wallpapers (wall.js): two photo layers that cross-fade and a darkening layer, behind everything; the theme's own background steps back */
+.wp,
+.wpd {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  opacity: 0;
+  pointer-events: none;
+}
+.wp {
+  background-size: cover;
+  background-position: center;
+  transition: opacity calc(1.2s * var(--spd)) linear;
+}
+.wp.on,
+.wpon .wpd {
+  opacity: 1;
+}
+body.wpon {
+  background-image: none;
+}
+/* cards: small widgets in the theme's slots (app/src/js/cards.js); placed like the clock, from the slot's edges */
+#cards {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  z-index: 5;
+  pointer-events: none;
+}
+.card {
+  position: absolute;
+  left: var(--cl);
+  right: var(--cr);
+  top: var(--ct);
+  bottom: var(--cb);
+  transform: var(--ctx);
+  overflow: hidden;
+  transition: opacity calc(0.25s * var(--spd)) linear;
+}
+/* text follows the side the slot is on (start and end, so it is mirrored in a right-to-left language) */
+.card[data-align="left"] {
+  text-align: start;
+}
+.card[data-align="center"] {
+  text-align: center;
+}
+.card[data-align="right"] {
+  text-align: end;
+}
+/* while the app grid is open, only the cards the theme keeps (grid: keep) stay */
+.grid-open .card:not(.keep) {
+  opacity: 0;
+}
+/* the greeting: one line in capitals, like the theme greeting above the clock; the second line (the date) in plain text below */
+.card-greeting {
+  display: flex;
+  flex-direction: column;
+  font-size: calc(24px * var(--fs) * var(--date-s));
+  color: rgba(245, 246, 248, 0.88);
+  line-height: 1.2;
+}
+.card-greeting .l1,
+.card-greeting .l2 {
+  flex: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-greeting .l1 {
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.card-greeting .l2 {
+  margin-top: 6px;
+  font-size: 1.25em;
+}
+/* a text card: lines of text, a "#" line as a heading, in three sizes */
+.card-template {
+  color: var(--ink);
+  font-size: calc(30px * var(--fs));
+  line-height: 1.3;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+.card-template[data-size="small"] {
+  font-size: calc(22px * var(--fs));
+}
+.card-template[data-size="large"] {
+  font-size: calc(44px * var(--fs));
+}
+.card-template .hd {
+  font-size: 1.6em;
+  font-weight: 700;
+  line-height: 1.15;
+}
+/* the weather card: the icon and the temperature, the place and the sky in words, and the next days in a row */
+.card-weather {
+  color: var(--ink);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+.wx-now {
+  display: flex;
+  align-items: center;
+}
+[data-align="right"] .wx-now {
+  justify-content: flex-end;
+}
+[data-align="center"] .wx-now {
+  justify-content: center;
+}
+.wx-i svg {
+  display: block;
+  width: calc(64px * var(--fs));
+  height: calc(64px * var(--fs));
+  margin: 0 16px 0 0;
+}
+.wx-t {
+  font-size: calc(64px * var(--fs));
+  font-weight: 600;
+  line-height: 1;
+}
+.wx-p,
+.wx-none {
+  margin-top: 6px;
+  font-size: calc(24px * var(--fs));
+  color: var(--ink2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wx-days {
+  display: flex;
+  margin-top: 16px;
+  font-size: calc(22px * var(--fs));
+}
+[data-align="right"] .wx-days {
+  justify-content: flex-end;
+}
+.wx-days > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 96px;
+}
+.wx-days > div + div {
+  margin-left: 18px;
+}
+.wx-days svg {
+  width: 34px;
+  height: 34px;
+  margin: 6px 0;
+}
+.wx-days small {
+  color: var(--ink2);
+  font-size: 1em;
+}
+/* a list keeps its height to its rows (at most the slot's), and its text starts on the reading side */
+.card-ha-entities {
+  height: auto !important;
+  max-height: var(--ch);
+  text-align: start !important;
+}
+/* Home Assistant cards: an entity (icon, state, name) on a glass panel, a list of entities, a camera picture */
+.card-ha-entity,
+.card-ha-entities {
+  padding: 16px 24px;
+  border-radius: calc(var(--tile-r) * 1.2);
+  background: var(--pill-bg);
+  box-shadow: inset 0 0 0 1px var(--pill-ring);
+  color: var(--ink);
+}
+.card-ha-entity {
+  display: flex;
+  align-items: center;
+  transition:
+    transform calc(0.15s * var(--spd)) ease-out,
+    background-color calc(0.15s * var(--spd)) linear;
+}
+.card-ha-entity.on .ha-i {
+  color: var(--acc);
+}
+.card-ha-entity.f {
+  background: var(--acc);
+  color: var(--acc-ink);
+  transform: scale(1.04);
+}
+.card-ha-entity.f .ha-i,
+.card-ha-entity.f .ha-n {
+  color: inherit;
+}
+.ha-i svg {
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin-right: 20px;
+}
+.ha-tx {
+  flex: 1;
+  min-width: 0;
+  text-align: start;
+}
+.ha-s {
+  font-size: calc(40px * var(--fs));
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ha-n {
+  margin-top: 4px;
+  font-size: calc(22px * var(--fs));
+  color: var(--ink2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ha-title {
+  font-size: calc(26px * var(--fs));
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.ha-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  font-size: calc(24px * var(--fs));
+}
+.ha-row + .ha-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ha-ri svg {
+  display: block;
+  width: 28px;
+  height: 28px;
+  margin-right: 14px;
+  color: var(--ink2);
+}
+.ha-rn {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ha-rs {
+  margin-left: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.card-ha-camera {
+  border-radius: calc(var(--tile-r) * 1.2);
+  background: rgba(0, 0, 0, 0.35);
+}
+.card-ha-camera img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.card-ha-camera .ha-n {
+  padding: 22px 26px;
+}
+/* the Home Assistant weather card: now on the left, the forecast in columns on the right */
+.card-ha-weather {
+  display: flex;
+  align-items: center;
+  color: var(--ink);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+.hw-now {
+  flex: none;
+  min-width: 250px;
+  text-align: start;
+}
+.hw-top {
+  display: flex;
+  align-items: center;
+}
+.hw-t {
+  font-size: calc(76px * var(--fs));
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.hw-c {
+  margin-top: 10px;
+  font-size: calc(26px * var(--fs));
+  font-weight: 600;
+  white-space: nowrap;
+}
+.hw-f,
+.hw-msg {
+  margin-top: 4px;
+  font-size: calc(22px * var(--fs));
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+.hw-fc {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  margin-left: 28px;
+  padding-left: 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+.hw-fc > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 84px;
+  font-size: calc(22px * var(--fs));
+}
+.hw-fc > div + div {
+  margin-left: 10px;
+}
+.hw-d {
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.hw-fc svg {
+  width: 38px;
+  height: 38px;
+  margin: 8px 0;
+}
+.hw-fc b {
+  font-weight: 600;
+}
+.hw-fc small {
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.62);
+}
+.hw-fc i {
+  margin-top: 2px;
+  font-style: normal;
+  font-size: 0.82em;
+  color: #9fd3ff;
+}
+/* OLED care (cards.js): dimmed after three minutes without a key; the slow shift of the whole layer is not animated */
+.cards-idle .card {
+  opacity: 0.45;
+  transition: opacity 2s linear;
+}
+/* ---------- scenes and the glass clock (scenes.js; after couch-tv, MIT). Layers: photo, shade, glass clock, the scenery cut out of
+   the photo, the late-evening dimming; then the rest of Home. Only opacity is animated. ---------- */
+@font-face {
+  font-family: "CYTV Clock";
+  font-weight: 300;
+  font-display: block;
+  src: url(antonio.woff2) format("woff2");
+}
+#scenes,
+#gsolo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  pointer-events: none;
+}
+body.scenes-on {
+  background-image: none;
+}
+/* the scenes take the place of the theme's wallpaper and of Wallpapers */
+.scenes-on .wp,
+.scenes-on .wpd {
+  display: none;
+}
+.scene {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  display: none;
+  opacity: 0;
+  transition: opacity calc(1.6s * var(--spd)) ease-in-out;
+  will-change: opacity;
+}
+.scene.ready {
+  display: block;
+}
+.scene.on {
+  opacity: 1;
+}
+.scene .sbg,
+.scene .fg,
+.scene .shade,
+.scene .late {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+}
+.scene .sbg,
+.scene .fg {
+  object-fit: cover;
+}
+/* after 10 pm the scene dims a little (an overlay, no filter) */
+.scene .late {
+  background: #000;
+  opacity: 0;
+  transition: opacity 2s linear;
+}
+.late .scene .late {
+  opacity: 0.28;
+}
+.gclock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 150px;
+  text-align: center;
+  white-space: nowrap;
+  font-family: "CYTV Clock", "Arial Narrow", sans-serif;
+  font-weight: 300;
+  font-size: 400px;
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+}
+.gclock .fill {
+  display: block;
+  padding: 0.2em 0;
+  margin: -0.2em 0;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-size: 1920px 1080px;
+  background-repeat: no-repeat;
+}
+.gclock .rim,
+.gclock .sheen {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+.gclock .rim {
+  color: rgba(255, 255, 255, 0.1);
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.55);
+}
+.gclock .sheen {
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-image: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0) 38%,
+    rgba(255, 255, 255, 0) 70%,
+    rgba(255, 255, 255, 0.22) 100%
+  );
+}
+/* without scenes: a white frosted fill */
+#gsolo .gclock .fill {
+  background-image: linear-gradient(170deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.12));
+}
+/* the scenes, as in couch-tv: Night pink glass behind the peak */
+.s-night .gclock .fill {
+  filter: brightness(1.15) saturate(1.2);
+  opacity: 0.9;
+}
+.s-night .gclock .rim {
+  color: rgba(255, 200, 215, 0.06);
+  -webkit-text-stroke-color: rgba(255, 215, 225, 0.5);
+}
+/* Golden hour: a little smaller, low enough for the volcano's tip to rise into the digits */
+.s-golden .gclock {
+  top: 152px;
+  font-size: 390px;
+}
+/* Waterline: the clock on the water; under the line a soft reflection */
+.s-water .shade {
+  background: linear-gradient(180deg, rgba(0, 12, 24, 0.42) 0%, rgba(0, 12, 24, 0.12) 40%, rgba(0, 0, 0, 0) 52%, rgba(0, 20, 40, 0.5) 100%);
+}
+.s-water .gclock {
+  top: 268px;
+  font-size: 420px;
+}
+.s-water .gclock.under {
+  opacity: 0.7;
+  transform: translateX(5px);
+}
+.s-water .gclock.under .rim {
+  -webkit-text-stroke-color: rgba(170, 240, 255, 0.5);
+}
+/* Fog: a big dark clock on the left, sinking into the misty hills */
+.s-fog .gclock {
+  left: 96px;
+  right: auto;
+  top: 172px;
+  font-size: 470px;
+  text-align: left;
+}
+.s-fog .gclock .fill {
+  filter: brightness(0.46) saturate(0.8) contrast(1.1);
+  opacity: 0.8;
+}
+.s-fog .gclock .rim {
+  color: transparent;
+  -webkit-text-stroke-color: rgba(255, 255, 255, 0.6);
+}
+.s-fog .gclock .sheen {
+  display: none;
+}
+/* Dawn: warm light at the top, the clock low enough for the ridges to cross it */
+.s-dawn .shade {
+  background: linear-gradient(180deg, rgba(50, 28, 12, 0.42) 0%, rgba(50, 28, 12, 0) 55%);
+}
+.s-dawn .gclock {
+  top: 230px;
+}
+/* with the glass clock the text clock steps aside: only the date stays, centred above the glass clock (each scene places it) */
+[data-cstyle="glass"] #time,
+[data-cstyle="glass"] #greet {
+  display: none;
+}
+[data-cstyle="glass"] #clock {
+  left: 0;
+  right: 0;
+  top: 96px;
+  bottom: auto;
+  transform: none;
+  justify-content: center;
+  height: auto;
+}
+[data-cstyle="glass"] #date {
+  margin: 0;
+  padding: 0;
+  font-size: calc(34px * var(--date-s));
+  font-weight: 500;
+  color: #fff;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  transition: opacity calc(0.6s * var(--spd)) ease-in-out;
+}
+[data-cstyle="glass"].scene-night #date {
+  color: rgba(255, 232, 238, 0.92);
+}
+[data-cstyle="glass"].scene-golden #clock {
+  top: 106px;
+}
+[data-cstyle="glass"].scene-water #clock {
+  top: 216px;
+}
+[data-cstyle="glass"].scene-dawn #clock {
+  top: 176px;
+}
+[data-cstyle="glass"].scene-fog #clock {
+  left: 104px;
+  right: auto;
+  top: 116px;
+  justify-content: flex-start;
+}
+[data-cstyle="glass"].scene-fog #date {
+  color: #16201d;
+  text-shadow: none;
+}
+/* the light misty sky of Fog: the top buttons turn dark so they stay visible */
+.scenes-on.scene-fog .pill:not(.f) {
+  background: rgba(22, 32, 29, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(22, 32, 29, 0.28);
+  color: #16201d;
+}
+/* glass cards (cards.style): scenes.js puts the blurred scene behind each one; this is the frame, and the panel without scenes */
+[data-cards="glass"] .card-weather,
+[data-cards="glass"] .card-ha-weather,
+[data-cards="glass"] .card-ha-entity,
+[data-cards="glass"] .card-ha-entities,
+[data-cards="glass"] .card-ha-camera {
+  padding: 22px 28px;
+  border-radius: 30px;
+  background-color: rgba(30, 20, 28, 0.34);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 220, 230, 0.2),
+    inset 0 1px 0 rgba(255, 230, 238, 0.22),
+    0 24px 60px rgba(0, 0, 0, 0.28);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22);
+  color: #fff;
+}
+[data-cards="glass"] .card-ha-camera {
+  padding: 0;
+}
+[data-cards="glass"] .card-ha-entity.f {
+  background-image: none !important;
+  background-color: var(--acc);
+  color: var(--acc-ink);
+  text-shadow: none;
+}
+/* the app grid over frosted glass (scenes.js #sglass) instead of the dark layer, with scenes and glass cards */
+#sglass {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  background-size:
+    100% 100%,
+    1920px 1080px;
+  transition: opacity calc(0.25s * var(--spd)) linear;
+}
+.scenes-on[data-cards="glass"].grid-open #sglass {
+  opacity: 1;
+}
+.scenes-on[data-cards="glass"] #scroll::before {
+  display: none;
+}

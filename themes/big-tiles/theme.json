@@ -1,0 +1,17 @@
+{
+  "name": "Big Tiles",
+  "author": "CleanYourTV",
+  "description": "Classic with large tiles matching the dock in four columns.",
+  "extends": "classic",
+  "grid": {
+    "cols": 4,
+    "tileH": 230,
+    "gapX": 32,
+    "gapY": 32,
+    "radius": 36,
+    "y": 622
+  },
+  "tile": {
+    "iconScale": 1.3
+  }
+}

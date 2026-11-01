@@ -1,0 +1,4 @@
+#!/bin/sh
+# Start the audio/volume service only. This script never replaces or launches as LG Home.
+D=/media/developer/cleanyourtv
+pgrep -f '[c]leanyourtv/helper.js' >/dev/null 2>&1 || (nohup node "$D/helper.js" >/tmp/cleanyourtv-helper.log 2>&1 </dev/null &)
