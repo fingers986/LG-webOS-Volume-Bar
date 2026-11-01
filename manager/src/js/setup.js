@@ -39,17 +39,10 @@ function logTail(cb) {
 }
 function waitUp(n) {
   api('/api/manager/status').then(
-    function (s0) {
+    function () {
       offline = false;
       banner('');
       load();
-      if (!(s0.keys && s0.keys.learned) && s0.options && s0.options.inputKey)
-        setTimeout(function () {
-          api('/api/manager/status').then(function (s) {
-            st = s;
-            openKeys('input');
-          });
-        }, 1500);
     },
     function () {
       logTail(function (t) {

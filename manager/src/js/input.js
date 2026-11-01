@@ -1,5 +1,6 @@
 document.addEventListener('keydown', function (e) {
   var k = e.keyCode;
+  var handled = true;
   if (k === 38) next(-1);
   else if (k === 40) next(1);
   else if (k === 13) act();
@@ -12,8 +13,8 @@ document.addEventListener('keydown', function (e) {
         window.close();
       } catch (x) {}
     }
-  }
-  e.preventDefault();
+  } else handled = false;
+  if (handled) e.preventDefault();
 });
 document.addEventListener('click', function (e) {
   if (e.target.closest && e.target.closest('#shareclose')) {

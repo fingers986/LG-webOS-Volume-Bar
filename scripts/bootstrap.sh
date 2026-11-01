@@ -4,6 +4,8 @@ export PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH
 S=$(cd "$(dirname "$0")" && pwd)
 D=/media/developer/cleanyourtv
 INITD=/var/lib/webosbrew/init.d
+FIRST_INSTALL=0
+[ -f "$D/helper.js" ] || FIRST_INSTALL=1
 say(){ echo "[cleanyourtv-volume] $*"; }
 die(){ echo "[cleanyourtv-volume] ERROR: $*" >&2; exit 1; }
 [ "$(id -u)" = 0 ] || die 'run as root'
@@ -18,7 +20,7 @@ cp "$S/scripts/10-cleanyourtv-service" "$S/scripts/volume-osd-restore.sh" "$S/sc
 info=$(luna-send -n 1 -w 5000 -f luna://com.webos.service.tv.systemproperty/getSystemInfo '{"keys":["sdkVersion"]}' </dev/null 2>/dev/null)
 sdk=$(echo "$info" | sed -n 's/.*"sdkVersion": *"\([^"]*\)".*/\1/p')
 APP="$S/../../applications/com.cleanyourtv.notify/appinfo.json"
-REFRESH_SAM=1
+REFRESH_SAM=$FIRST_INSTALL
 [ -f "$APP" ] || die 'volume notification appinfo is missing'
 want=$(node "$S/helper/tvprofile.js" get notifyWindow --sdk "$sdk" 2>/dev/null)
 case "$want" in
