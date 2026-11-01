@@ -15,6 +15,11 @@ function run(path, body) {
 function opt(o) {
   api('/api/manager/options', o).then(
     function (s) {
+      if (s.error) {
+        banner(s.error, 'err');
+        poll();
+        return;
+      }
       st = s;
       build();
       draw();
@@ -84,11 +89,7 @@ function load(keep) {
       idx = setupIdx;
       draw();
       banner('');
-      if (!checkedOffline) {
-        checkedOffline = true;
-        setupDefaults();
-        offlineCheck();
-      }
+      setupDefaults();
     }
   );
 }
