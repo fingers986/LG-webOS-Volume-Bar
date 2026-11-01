@@ -4,7 +4,7 @@ A rooted LG webOS app that replaces the stock volume display with a selectable P
 
 ## Install
 
-Build the Homebrew Channel package with `python3 ipk/build.py`, then install the generated IPK from the Homebrew Channel. Open **LG webOS Volume Bar**, choose **Set up now**, then open **Settings → Experimental → Volume bar** to choose a style. **System default** restores LG's original OSD.
+Build the Homebrew Channel package with `node tools/build-pages.js` followed by `python3 ipk/build.py`, then install the generated IPK from the Homebrew Channel. Open **LG webOS Volume Bar**, choose **Set up now**, then open **Settings → Experimental → Volume bar** to choose a style. **System default** restores LG's original OSD.
 
 The installer keeps LG Home unchanged. The service starts at boot. Uninstall from the app to restore the saved OSD setting and remove the service.
 
