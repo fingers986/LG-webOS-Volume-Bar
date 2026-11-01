@@ -1,0 +1,1 @@
+{"name":"volume-bar-theme","version":"1.0.0","private":true,"scripts":{"build":"sh scripts/package.sh"},"devDependencies":{"@webos-tools/cli":"^3.2.6"}}

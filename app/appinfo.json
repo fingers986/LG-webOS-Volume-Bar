@@ -1,0 +1,18 @@
+{
+  "id": "com.fingers986.volumebartheme",
+  "version": "1.0.0",
+  "vendor": "fingers986",
+  "type": "web",
+  "main": "index.html",
+  "title": "Volume Bar Theme",
+  "appDescription": "Standalone volume bar themes for LG webOS using ARC volume reporting.",
+  "icon": "icon.png",
+  "visible": true,
+  "transparent": true,
+  "defaultWindowType": "overlay",
+  "handlesRelaunch": true,
+  "noSplashOnLaunch": true,
+  "spinnerOnLaunch": false,
+  "resolution": "1920x1080",
+  "requiredACG": []
+}
