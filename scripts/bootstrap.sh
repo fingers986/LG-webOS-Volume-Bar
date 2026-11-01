@@ -18,22 +18,20 @@ cp "$S/scripts/10-cleanyourtv-service" "$S/scripts/volume-osd-restore.sh" "$S/sc
 info=$(luna-send -n 1 -w 5000 -f luna://com.webos.service.tv.systemproperty/getSystemInfo '{"keys":["sdkVersion"]}' </dev/null 2>/dev/null)
 sdk=$(echo "$info" | sed -n 's/.*"sdkVersion": *"\([^"]*\)".*/\1/p')
 APP="$S/../../applications/com.cleanyourtv.notify/appinfo.json"
-REFRESH_SAM=0
-if [ -f "$APP" ]; then
-  want=$(node "$S/helper/tvprofile.js" get notifyWindow --sdk "$sdk" 2>/dev/null)
-  case "$want" in
-    topui|overlay)
-      before=$(sed -n 's/.*"defaultWindowType":"\([^"]*\)".*/\1/p' "$APP")
-      if [ "$before" != "$want" ]; then
-        sed -i "s/\"defaultWindowType\":\"[^\"]*\"/\"defaultWindowType\":\"$want\"/" "$APP"
-        after=$(sed -n 's/.*"defaultWindowType":"\([^"]*\)".*/\1/p' "$APP")
-        [ "$after" = "$want" ] || die "could not set notify window type to $want"
-        REFRESH_SAM=1
-      fi
-      ;;
-    *) die "could not determine supported notify window type for SDK ${sdk:-unknown}" ;;
-  esac
-fi
+REFRESH_SAM=1
+[ -f "$APP" ] || die 'volume notification appinfo is missing'
+want=$(node "$S/helper/tvprofile.js" get notifyWindow --sdk "$sdk" 2>/dev/null)
+case "$want" in
+  topui|overlay)
+    before=$(sed -n 's/.*"defaultWindowType":"\([^"]*\)".*/\1/p' "$APP")
+    if [ "$before" != "$want" ]; then
+      sed -i "s/\"defaultWindowType\":\"[^\"]*\"/\"defaultWindowType\":\"$want\"/" "$APP"
+      after=$(sed -n 's/.*"defaultWindowType":"\([^"]*\)".*/\1/p' "$APP")
+      [ "$after" = "$want" ] || die "could not set notify window type to $want"
+    fi
+    ;;
+  *) die "could not determine supported notify window type for SDK ${sdk:-unknown}" ;;
+esac
 [ -f "$D/config.json" ] || cp "$S/config.example.json" "$D/config.json"
 chmod 700 "$D"; chmod 600 "$D/config.json"; chmod 700 "$D/10-cleanyourtv-service" "$D/volume-osd-restore.sh" "$D/after-sam.sh"
 rm -f "$INITD/10-cleanyourtv-home" "$INITD/15-cleanyourtv-debloat"
