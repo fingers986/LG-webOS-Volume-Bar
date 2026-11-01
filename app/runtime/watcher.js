@@ -1,6 +1,159 @@
 'use strict';
-var cp=require('child_process'),fs=require('fs'),APP='com.fingers986.volumebartheme',DATA='/media/developer/volume-bar-theme/settings.json',master=null,arc=null,last=null,stop=false,busy=false,activeUntil=0;
-function launch(){if(!master||master.soundOutput!=='external_arc'||arc===null)return;var k=String(arc)+':'+!!master.muteStatus;if(k===last)return;last=k;var theme='pill';try{theme=JSON.parse(fs.readFileSync(DATA,'utf8')).theme||theme}catch(e){}cp.execFile('/usr/bin/luna-send',['-n','1','luna://com.webos.applicationManager/launch',JSON.stringify({id:APP,params:{volume:arc,mute:!!master.muteStatus,theme:theme}})],function(){})}
-function poll(){if(stop)return;if(busy){setTimeout(poll,100);return}if(!master||master.soundOutput!=='external_arc'){setTimeout(poll,1000);return}busy=true;var old=arc,p=cp.spawn('/usr/bin/script',['-q','-c',"/usr/bin/luna-send -n 1 'luna://com.webos.service.eim/getArcVolume' '{}'",'/dev/null']),s='',done=false,t=setTimeout(function(){try{p.kill()}catch(e){}finish()},1500);function finish(){if(done)return;done=true;clearTimeout(t);busy=false;var m=s.match(/\{[^]*\}/);if(m)try{var r=JSON.parse(m[0]);if(typeof r.Volume==='number'&&r.Volume>=0&&r.Volume<=100){arc=r.Volume;launch();if(old!==arc)activeUntil=Date.now()+2500}}catch(e){}setTimeout(poll,Date.now()<activeUntil?150:1000)}p.stdout.on('data',function(d){s+=d.toString()});p.on('close',finish);p.on('error',finish)}
-function sub(){var p=cp.spawn('/usr/bin/script',['-q','-f','-c',"/usr/bin/luna-send -i 'luna://com.webos.service.audio/master/getVolume' '{\"subscribe\":true}'",'/dev/null']),b='';p.stdout.on('data',function(d){b+=d.toString().replace(/\r/g,'');var a=b.split('\n');b=a.pop();a.forEach(function(l){try{var r=JSON.parse(l),v=r.volumeStatus;if(v){var c=!master||master.volume!==v.volume||master.muteStatus!==v.muteStatus||master.soundOutput!==v.soundOutput;master=v;if(c){activeUntil=Date.now()+2500;poll()}}}catch(e){}})});p.on('close',function(){if(!stop)setTimeout(sub,2000)})}
-process.on('SIGTERM',function(){stop=true;process.exit(0)});sub();poll();
+// Audio watcher follows CleanYourTV's helper/audio.js:
+// master/getVolume provides mute/output; getArcVolume provides the ARC level.
+var cp = require('child_process');
+var fs = require('fs');
+var APP_ID = 'com.fingers986.volumebartheme';
+var SETTINGS = '/media/developer/volume-bar-theme/settings.json';
+var master = null;
+var arcVolume = null;
+var lastShown = null;
+var lastLaunchAt = 0;
+var activeUntil = 0;
+var arcFailed = false;
+var polling = false;
+var stopping = false;
+var audioProcess = null;
+var arcTimer = null;
+var launchTimer = null;
+
+function log(message) {
+  try { fs.appendFileSync('/tmp/volume-bar-theme.log', new Date().toISOString() + ' ' + message + '\n'); } catch (e) {}
+}
+function selectedTheme() {
+  try {
+    var value = JSON.parse(fs.readFileSync(SETTINGS, 'utf8')).theme;
+    return value === 'capsule' || value === 'dial' ? value : 'pill';
+  } catch (e) { return 'pill'; }
+}
+function showVolume() {
+  if (!master || typeof master.volume !== 'number') return;
+  var volume = master.soundOutput === 'external_arc' ? arcVolume : master.volume;
+  if (volume === null || typeof volume !== 'number') return;
+  var key = String(volume) + ':' + !!master.muteStatus + ':' + master.soundOutput;
+  if (key === lastShown) return;
+  var now = Date.now();
+  if (now - lastLaunchAt < 350) {
+    if (!launchTimer) launchTimer = setTimeout(function () { launchTimer = null; showVolume(); }, 350 - (now - lastLaunchAt));
+    return;
+  }
+  lastShown = key;
+  lastLaunchAt = now;
+  var params = { volume: volume, mute: !!master.muteStatus, output: master.soundOutput, theme: selectedTheme() };
+  cp.execFile('/usr/bin/luna-send', ['-n', '1', 'luna://com.webos.applicationManager/launch', JSON.stringify({ id: APP_ID, params: params })], function (error) {
+    if (error) log('volume overlay launch failed: ' + error.message);
+  });
+}
+
+// The pty wrapper matches CleanYourTV's helper/audio.js on webOS, where the
+// Luna response is emitted through a pseudo-terminal rather than plain stdout.
+function pollArc() {
+  arcTimer = null;
+  if (stopping || polling || !master || master.soundOutput !== 'external_arc') {
+    if (!stopping) arcTimer = setTimeout(pollArc, 1000);
+    return;
+  }
+  polling = true;
+  var previous = arcVolume;
+  var child;
+  try {
+    child = cp.spawn('script', ['-q', '-c', "luna-send -n 1 'luna://com.webos.service.eim/getArcVolume' '{}'", '/dev/null']);
+  } catch (e) {
+    polling = false;
+    arcTimer = setTimeout(pollArc, 1000);
+    return;
+  }
+  var output = '';
+  var done = false;
+  var timeout = setTimeout(function () {
+    try { child.kill(); } catch (e) {}
+    finish(new Error('ARC volume request timed out'));
+  }, 1500);
+  function finish(error) {
+    if (done) return;
+    done = true;
+    clearTimeout(timeout);
+    polling = false;
+    if (!stopping && !error) {
+      try {
+        var match = output.match(/\{[^]*\}/);
+        var response = match && JSON.parse(match[0]);
+        var value = response && response.Volume;
+        if (typeof value !== 'number' || !isFinite(value) || value < 0 || value > 100) throw new Error('invalid ARC volume response');
+        arcFailed = false;
+        arcVolume = value;
+        if (value !== previous) {
+          master.volume = value;
+          showVolume();
+          activeUntil = Date.now() + 2500;
+        }
+      } catch (e) { error = e; }
+    }
+    if (error && !arcFailed) log('ARC volume unavailable: ' + error.message);
+    arcFailed = !!error;
+    if (!stopping) arcTimer = setTimeout(pollArc, Date.now() < activeUntil ? 150 : 1000);
+  }
+  child.stdout.on('data', function (data) { output += data.toString('utf8'); });
+  child.on('error', finish);
+  child.on('close', function (code) { finish(code ? new Error('ARC volume request exited ' + code) : null); });
+}
+
+function subscribeAudio(delay) {
+  if (stopping) return;
+  var retryDelay = delay || 3000;
+  try { audioProcess = cp.spawn('luna-send', ['-i', 'luna://com.webos.service.audio/master/getVolume', '{"subscribe":true}']); }
+  catch (e) {
+    setTimeout(function () { subscribeAudio(Math.min(retryDelay * 2, 60000)); }, retryDelay);
+    return;
+  }
+  var buffer = '';
+  var retry = false;
+  audioProcess.stdout.on('data', function (chunk) {
+    buffer += chunk.toString('utf8');
+    var lines = buffer.split('\n');
+    buffer = lines.pop();
+    lines.forEach(function (line) {
+      try {
+        var response = JSON.parse(line.trim());
+        var value = response.volumeStatus || response;
+        if (!value || typeof value.muteStatus !== 'boolean' && typeof value.volume !== 'number') return;
+        var oldOutput = master && master.soundOutput;
+        var nextVolume = typeof value.volume === 'number' ? value.volume : (master ? master.volume : 0);
+        var changed = !master || master.muteStatus !== value.muteStatus || master.soundOutput !== value.soundOutput || master.volume !== nextVolume;
+        master = {
+          muteStatus: typeof value.muteStatus === 'boolean' ? value.muteStatus : !!(master && master.muteStatus),
+          soundOutput: value.soundOutput || oldOutput || 'tv_speaker',
+          volume: nextVolume
+        };
+        if (master.soundOutput === 'external_arc') {
+          if (arcVolume !== null) master.volume = arcVolume;
+          if (changed) {
+            activeUntil = Date.now() + 2500;
+            if (arcTimer) clearTimeout(arcTimer);
+            pollArc();
+          }
+        }
+        if (changed && (master.soundOutput !== 'external_arc' || arcVolume !== null)) showVolume();
+      } catch (e) {}
+    });
+  });
+  function restart() {
+    if (retry || stopping) return;
+    retry = true;
+    setTimeout(function () { subscribeAudio(Math.min(retryDelay * 2, 60000)); }, retryDelay);
+  }
+  audioProcess.on('error', restart);
+  audioProcess.on('close', restart);
+}
+function stop() {
+  stopping = true;
+  if (arcTimer) clearTimeout(arcTimer);
+  if (launchTimer) clearTimeout(launchTimer);
+  if (audioProcess) try { audioProcess.kill(); } catch (e) {}
+  process.exit(0);
+}
+process.on('SIGTERM', stop);
+process.on('SIGINT', stop);
+log('CleanYourTV-based volume theme watcher started');
+subscribeAudio(3000);
+pollArc();
