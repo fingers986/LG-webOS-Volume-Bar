@@ -18,9 +18,21 @@ cp "$S/scripts/10-cleanyourtv-service" "$S/scripts/volume-osd-restore.sh" "$S/sc
 info=$(luna-send -n 1 -w 5000 -f luna://com.webos.service.tv.systemproperty/getSystemInfo '{"keys":["sdkVersion"]}' </dev/null 2>/dev/null)
 sdk=$(echo "$info" | sed -n 's/.*"sdkVersion": *"\([^"]*\)".*/\1/p')
 APP="$S/../../applications/com.cleanyourtv.notify/appinfo.json"
+REFRESH_SAM=0
 if [ -f "$APP" ]; then
   want=$(node "$S/helper/tvprofile.js" get notifyWindow --sdk "$sdk" 2>/dev/null)
-  case "$want" in topui|overlay) sed -i "s/\"defaultWindowType\":\"[^\"]*\"/\"defaultWindowType\":\"$want\"/" "$APP" ;; esac
+  case "$want" in
+    topui|overlay)
+      before=$(sed -n 's/.*"defaultWindowType":"\([^"]*\)".*/\1/p' "$APP")
+      if [ "$before" != "$want" ]; then
+        sed -i "s/\"defaultWindowType\":\"[^\"]*\"/\"defaultWindowType\":\"$want\"/" "$APP"
+        after=$(sed -n 's/.*"defaultWindowType":"\([^"]*\)".*/\1/p' "$APP")
+        [ "$after" = "$want" ] || die "could not set notify window type to $want"
+        REFRESH_SAM=1
+      fi
+      ;;
+    *) die "could not determine supported notify window type for SDK ${sdk:-unknown}" ;;
+  esac
 fi
 [ -f "$D/config.json" ] || cp "$S/config.example.json" "$D/config.json"
 chmod 700 "$D"; chmod 600 "$D/config.json"; chmod 700 "$D/10-cleanyourtv-service" "$D/volume-osd-restore.sh" "$D/after-sam.sh"
@@ -33,4 +45,21 @@ for n in 1 2 3 4 5 6 7 8 9 10; do
   sleep 1
 done
 curl -fsS -m 3 http://127.0.0.1:8765/api/version >/dev/null 2>&1 || die 'service did not start; check /tmp/cleanyourtv-helper.log'
+appinfo=$(luna-send -n 1 -w 5000 -f luna://com.webos.applicationManager/getAppInfo '{"id":"com.cleanyourtv.notify"}' </dev/null 2>/dev/null)
+case "$appinfo" in *'"returnValue": true'*) ;; *) REFRESH_SAM=1 ;; esac
+registered=$(echo "$appinfo" | sed -n 's/.*"defaultWindowType" *: *"\([^"]*\)".*/\1/p')
+[ -n "$registered" ] && [ "$registered" != "$want" ] && REFRESH_SAM=1
+if [ "$REFRESH_SAM" = 1 ]; then
+  say 'refreshing the volume overlay registration with SAM'
+  systemctl restart sam || die 'could not restart SAM to register the volume overlay'
+  sam_ready=0
+  for n in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+    systemctl is-active sam >/dev/null 2>&1 && { sam_ready=1; break; }
+    sleep 2
+  done
+  [ "$sam_ready" = 1 ] || die 'SAM did not become active after refreshing the volume overlay'
+  sh "$D/after-sam.sh" </dev/null
+  sleep 3
+  luna-send -n 1 -w 10000 -f luna://com.webos.applicationManager/launch '{"id":"com.webos.app.home"}' </dev/null >/dev/null 2>&1 || say 'LG Home did not respond to relaunch; it remains the configured Home app'
+fi
 say 'volume bar service installed; LG Home remains unchanged'

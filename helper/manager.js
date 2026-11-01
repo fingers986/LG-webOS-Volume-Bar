@@ -18,8 +18,12 @@ function create(ctx) {
     if (act === 'options') {
       if (audio.THEMES.indexOf(data.volumeTheme) < 0) return send({ error: 'unknown volume theme' }, 400);
       const before = config.options().volumeTheme;
-      config.update('manager', c => { c.options = Object.assign({}, c.options || {}, { volumeTheme: data.volumeTheme }); });
-      if (before !== data.volumeTheme && ctx.audio) await ctx.audio.syncStockVolumeOSD(data.volumeTheme);
+      if (before !== data.volumeTheme) {
+        if (!ctx.audio) return send({ error: 'Audio service is not ready; volume bar setting was not changed' }, 503);
+        const applied = await ctx.audio.syncStockVolumeOSD(data.volumeTheme);
+        if (!applied) return send({ error: 'Could not apply the volume bar setting on this TV; check the service log' }, 500);
+        config.update('manager', c => { c.options = Object.assign({}, c.options || {}, { volumeTheme: data.volumeTheme }); });
+      }
       return send(status());
     }
     if (act === 'uninstall') {

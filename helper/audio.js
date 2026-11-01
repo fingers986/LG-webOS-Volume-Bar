@@ -82,21 +82,25 @@ function create(ctx) {
       if (theme === 'system') {
         if (was) {
           const r = await luna('luna://com.webos.service.config/setConfigs', { configs: { [OSD_KEY]: was === 'true' } });
-          if (!r.returnValue) return console.log('audio: LG’s volume bar could not be put back: ' + (r.errorText || 'refused'));
+          if (!r.returnValue) {
+            console.log('audio: LG’s volume bar could not be put back: ' + (r.errorText || 'refused'));
+            return false;
+          }
           forget();
         }
         stock = 'on';
-        return;
+        return true;
       }
       if (was) {
         stock = 'off'; // switched off earlier (the service was restarted)
-        return;
+        return true;
       }
       const r = await luna('luna://com.webos.service.config/getConfigs', { configNames: [OSD_KEY] });
       const cur = r && r.configs && r.configs[OSD_KEY];
       if (typeof cur !== 'boolean') {
         stock = 'unsupported';
-        return console.log('audio: this TV does not report ' + OSD_KEY + ', so LG’s volume bar stays and the custom one is not shown');
+        console.log('audio: this TV does not report ' + OSD_KEY + ', so LG’s volume bar stays and the custom one is not shown');
+        return false;
       }
       try {
         fs.mkdirSync(P.D + '/backup');
@@ -106,20 +110,26 @@ function create(ctx) {
       if (!w.returnValue) {
         forget();
         stock = 'unsupported';
-        return console.log('audio: LG’s volume bar could not be switched off: ' + (w.errorText || 'refused'));
+        console.log('audio: LG’s volume bar could not be switched off: ' + (w.errorText || 'refused'));
+        return false;
       }
       stock = 'off';
+      return true;
     } catch (e) {
       console.log('audio: ' + e.message);
+      return false;
     }
   }
 
   function syncStockVolumeOSD(theme) {
-    currentTheme = THEMES.indexOf(theme) >= 0 ? theme : option();
-    const t = currentTheme;
-    stockBusy = stockBusy.then(() => applyStock(t));
-    status.seq++;
-    notifyWaiters();
+    const t = THEMES.indexOf(theme) >= 0 ? theme : option();
+    stockBusy = stockBusy.then(async () => {
+      const applied = await applyStock(t);
+      if (applied) currentTheme = t;
+      status.seq++;
+      notifyWaiters();
+      return applied;
+    });
     return stockBusy;
   }
 
