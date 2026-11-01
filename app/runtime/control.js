@@ -1,6 +1,6 @@
 'use strict';
 var cp=require('child_process'),fs=require('fs'),DATA='/media/developer/volume-bar-theme',HOOK='/var/lib/webosbrew/init.d/91-volume-bar-theme',PID='/tmp/volume-bar-theme.pid',APP='/media/developer/apps/usr/palm/applications/com.fingers986.volumebartheme';
-function luna(uri,data,cb){var cmd="/usr/bin/luna-send -n 1 -w 5000 -f '"+uri+"' '"+JSON.stringify(data)+"' </dev/null";cp.execFile('/bin/sh',['-c',cmd],{timeout:7000},function(e,o){if(e)return cb(e);try{cb(null,JSON.parse(o))}catch(x){cb(x)}})}
+function luna(uri,data,cb){var cmd="/usr/bin/luna-send -n 1 -w 5000 -f '"+uri+"' '"+JSON.stringify(data)+"' </dev/null";cp.execFile('/bin/sh',['-c',cmd],function(e,o){if(e)return cb(e);try{cb(null,JSON.parse(o))}catch(x){cb(x)}})}
 function end(e){if(e){console.error(e.message);process.exit(1)}process.exit(0)}
 if(process.argv[2]==='enable'){
   try{if(!fs.existsSync(DATA))fs.mkdirSync(DATA);fs.writeFileSync(DATA+'/settings.json',JSON.stringify({theme:process.argv[3]||'pill'}));if(!fs.existsSync('/var/lib/webosbrew/init.d'))fs.mkdirSync('/var/lib/webosbrew/init.d')}catch(e){return end(e)}
